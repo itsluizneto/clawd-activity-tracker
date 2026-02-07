@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clawd Activity Tracker</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a33;
+      --muted: #9aa6c6;
+      --text: #e7ecff;
+      --accent: #7aa2ff;
+      --good: #4ade80;
+      --bad: #fb7185;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1000px 600px at 20% -10%, rgba(122,162,255,0.25), transparent 60%),
+                  radial-gradient(800px 500px at 90% 10%, rgba(74,222,128,0.15), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 20px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,16,32,0.7);
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; }
+    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+    main { padding: 16px 18px 30px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 420px 1fr; }
+    }
+
+    .card {
+      background: rgba(18,26,51,0.75);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .row { display: flex; gap: 10px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input, textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      padding: 10px;
+      color: var(--text);
+      outline: none;
+    }
+    textarea { min-height: 82px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--accent);
+      color: #08102a;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .muted { color: var(--muted); font-size: 12px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .kpi {
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+    .kpi .v { font-size: 18px; font-weight: 800; }
+    .kpi .l { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .item {
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+    }
+    .itemTop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+    .title { font-weight: 800; }
+    .meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .tag {
+      font-size: 12px;
+      color: #cfe0ff;
+      background: rgba(122,162,255,0.12);
+      border: 1px solid rgba(122,162,255,0.18);
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .twoCharts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 900px) {
+      .twoCharts { grid-template-columns: 1.2fr 0.8fr; }
+    }
+
+    .hr { height: 1px; background: var(--border); margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Clawd Activity Tracker</h1>
+      <div class="sub">Log actions completed + see a simple weekly view. (Local app, SQLite)</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap grid">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <div>
+            <div style="font-weight:800;">Add activity</div>
+            <div class="muted">Fast logging. Tags are comma-separated.</div>
+          </div>
+          <button class="secondary" id="refreshBtn">Refresh</button>
+        </div>
+        <div class="hr"></div>
+
+        <div class="row">
+          <div style="flex:1">
+            <label>Type</label>
+            <select id="type">
+              <option value="work">work</option>
+              <option value="research">research</option>
+              <option value="build">build</option>
+              <option value="content">content</option>
+              <option value="ops">ops</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label>When</label>
+            <input id="when" type="datetime-local" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>Title</label>
+          <input id="title" placeholder="e.g., Keepa: pulled US reviews + rating for ASIN B0..." />
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>Details</label>
+          <textarea id="details" placeholder="Optional. Notes, links, outcomes..." ></textarea>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label>Tags</label>
+          <input id="tags" placeholder="amazon, keepa, ppc" />
+        </div>
+
+        <div style="margin-top:12px; display:flex; gap:10px;">
+          <button id="addBtn">Add</button>
+          <div class="muted" id="status" style="align-self:center;"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="kpis">
+          <div class="kpi"><div class="v" id="kTotal">—</div><div class="l">Activities (last 14d)</div></div>
+          <div class="kpi"><div class="v" id="kToday">—</div><div class="l">Today</div></div>
+          <div class="kpi"><div class="v" id="kStreak">—</div><div class="l">Current streak (days)</div></div>
+        </div>
+
+        <div class="twoCharts">
+          <div class="card" style="padding:10px;">
+            <div style="font-weight:800;margin-bottom:6px;">Daily volume</div>
+            <canvas id="chartDays" height="110"></canvas>
+          </div>
+          <div class="card" style="padding:10px;">
+            <div style="font-weight:800;margin-bottom:6px;">By type</div>
+            <canvas id="chartTypes" height="110"></canvas>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
+          <div style="font-weight:800;">Recent</div>
+          <div class="muted">Newest first</div>
+        </div>
+        <div style="height:10px;"></div>
+        <div class="list" id="list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const api = {
+      async getStats(days=14){
+        const r = await fetch(`/api/stats?days=${days}`);
+        return r.json();
+      },
+      async getActivities(limit=50){
+        const r = await fetch(`/api/activities?limit=${limit}`);
+        return r.json();
+      },
+      async addActivity(payload){
+        const r = await fetch('/api/activities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if(!r.ok){
+          const t = await r.text();
+          throw new Error(t);
+        }
+        return r.json();
+      }
+    }
+
+    function toLocalInputValue(ts){
+      const d = dayjs(ts);
+      return d.format('YYYY-MM-DDTHH:mm');
+    }
+
+    let chartDays, chartTypes;
+
+    function computeStreak(dayCounts){
+      // dayCounts: Map(YYYY-MM-DD => n)
+      let streak = 0;
+      for(let i=0; ; i++){
+        const day = dayjs().subtract(i, 'day').format('YYYY-MM-DD');
+        const n = dayCounts.get(day) || 0;
+        if(n <= 0) break;
+        streak++;
+      }
+      return streak;
+    }
+
+    async function refresh(){
+      $('status').textContent = 'Loading…';
+      const [stats, acts] = await Promise.all([api.getStats(14), api.getActivities(60)]);
+
+      $('kTotal').textContent = stats.total;
+
+      const byDayMap = new Map();
+      const labels = [];
+      const values = [];
+      for(let i=13;i>=0;i--){
+        const day = dayjs().subtract(i,'day').format('YYYY-MM-DD');
+        labels.push(dayjs(day).format('MMM D'));
+        byDayMap.set(day, 0);
+        values.push(0);
+      }
+
+      // Convert bucket back to date labels
+      for(const row of stats.byDay){
+        const day = dayjs(Number(row.dayBucket) * 86400000).format('YYYY-MM-DD');
+        if(byDayMap.has(day)){
+          byDayMap.set(day, row.n);
+        }
+      }
+      for(let i=13;i>=0;i--){
+        const day = dayjs().subtract(i,'day').format('YYYY-MM-DD');
+        values[13 - i] = byDayMap.get(day) || 0;
+      }
+
+      const todayKey = dayjs().format('YYYY-MM-DD');
+      $('kToday').textContent = byDayMap.get(todayKey) || 0;
+      $('kStreak').textContent = computeStreak(byDayMap);
+
+      // charts
+      if(chartDays) chartDays.destroy();
+      chartDays = new Chart($('chartDays'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Activities', data: values, backgroundColor: 'rgba(122,162,255,0.55)' }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: 'rgba(231,236,255,0.8)' } },
+            y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(231,236,255,0.8)', precision: 0 } }
+          }
+        }
+      });
+
+      const typeLabels = stats.byType.map(x => x.type);
+      const typeValues = stats.byType.map(x => x.n);
+      if(chartTypes) chartTypes.destroy();
+      chartTypes = new Chart($('chartTypes'), {
+        type: 'doughnut',
+        data: {
+          labels: typeLabels,
+          datasets: [{ data: typeValues, backgroundColor: ['#7aa2ff','#4ade80','#fb7185','#fbbf24','#a78bfa'] }]
+        },
+        options: {
+          plugins: { legend: { labels: { color: 'rgba(231,236,255,0.85)' } } }
+        }
+      });
+
+      // list
+      const list = $('list');
+      list.innerHTML = '';
+      for(const a of acts.rows){
+        const div = document.createElement('div');
+        div.className = 'item';
+        const when = dayjs(a.ts).format('MMM D, HH:mm');
+        div.innerHTML = `
+          <div class="itemTop">
+            <div class="title">${escapeHtml(a.title)}</div>
+            <div class="meta">${escapeHtml(a.type)} • ${when}</div>
+          </div>
+          ${a.details ? `<div style="margin-top:8px; color: rgba(231,236,255,0.9); font-size: 13px; line-height: 1.35;">${escapeHtml(a.details)}</div>` : ''}
+          ${a.tags && a.tags.length ? `<div class="tags">${a.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+        `;
+        list.appendChild(div);
+      }
+
+      $('status').textContent = 'Up to date.';
+      setTimeout(() => { $('status').textContent = ''; }, 1500);
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    $('when').value = toLocalInputValue(Date.now());
+
+    $('addBtn').addEventListener('click', async () => {
+      try {
+        $('status').textContent = 'Saving…';
+        const ts = $('when').value ? dayjs($('when').value).valueOf() : Date.now();
+        await api.addActivity({
+          ts,
+          type: $('type').value,
+          title: $('title').value,
+          details: $('details').value,
+          tags: $('tags').value,
+        });
+        $('title').value = '';
+        $('details').value = '';
+        $('tags').value = '';
+        $('when').value = toLocalInputValue(Date.now());
+        await refresh();
+      } catch (e) {
+        $('status').textContent = 'Error: ' + e.message;
+      }
+    });
+
+    $('refreshBtn').addEventListener('click', refresh);
+
+    refresh();
+  </script>
+</body>
+</html>

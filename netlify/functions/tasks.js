@@ -1,5 +1,4 @@
 const { getSupabase } = require('./_supabase');
-const { requireAuth } = require('./_auth');
 
 function json(statusCode, data) {
   return {
@@ -27,9 +26,6 @@ const ALLOWED_STATUS = new Set(['backlog','in_progress','blocked','done']);
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') return json(200, { ok: true });
-
-  const auth = requireAuth(event);
-  if (!auth.ok) return json(401, { error: 'unauthorized' });
 
   const supabase = getSupabase();
 

@@ -138,15 +138,6 @@
     .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
     @media (min-width: 700px) { .row { grid-template-columns: 1fr 1fr; } }
     .muted { color: var(--muted); font-size: 12px; }
-
-    .login {
-      max-width: 420px;
-      margin: 80px auto;
-      padding: 16px;
-      border-radius: 14px;
-      background: rgba(18,26,51,0.75);
-      border: 1px solid var(--border);
-    }
   </style>
 </head>
 <body>
@@ -155,7 +146,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
       <div>
         <h1>Clawd Task Board</h1>
-        <div class="sub">Simple, private project board: backlog → in progress → done.</div>
+        <div class="sub">Simple project board: backlog → in progress → done.</div>
       </div>
       <div class="toolbar">
         <button class="secondary" id="refreshBtn">Refresh</button>
@@ -166,19 +157,7 @@
 </header>
 
 <main>
-  <div class="wrap" id="loginWrap" style="display:none;">
-    <div class="login">
-      <div class="title">Login</div>
-      <div class="muted" style="margin-top:6px;">Enter the board password.</div>
-      <div style="margin-top:10px;"><input id="pw" type="password" placeholder="Password" /></div>
-      <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
-        <button id="loginBtn">Login</button>
-        <div class="muted" id="loginStatus"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="wrap" id="boardWrap" style="display:none;">
+  <div class="wrap">
     <div class="grid">
       <section class="col" data-status="backlog">
         <div class="colTitle"><div class="name">Backlog</div><div class="pill" id="count_backlog">0</div></div>
@@ -255,7 +234,7 @@
   const $ = (id) => document.getElementById(id);
 
   async function api(path, opts={}) {
-    const r = await fetch(path, { credentials: 'include', ...opts });
+    const r = await fetch(path, opts);
     return r;
   }
 
@@ -297,39 +276,16 @@
   }
   function closeModal(){ $('modalBack').style.display='none'; }
 
-  async function checkAuth(){
-    const r = await api('/api/auth/me');
-    return r.ok;
-  }
-
-  async function login(){
-    $('loginStatus').textContent = 'Logging in…';
-    const password = $('pw').value;
-    const r = await api('/api/auth/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ password })
-    });
-    if(!r.ok){
-      $('loginStatus').textContent = 'Wrong password.';
-      return false;
-    }
-    $('loginStatus').textContent = 'OK.';
-    return true;
-  }
-
   function render(tasks){
     const groups = { backlog: [], in_progress: [], done: [], blocked: [] };
     for(const t of tasks){
       (groups[t.status] || groups.backlog).push(t);
     }
 
-    // counts
     $('count_backlog').textContent = groups.backlog.length;
     $('count_in_progress').textContent = groups.in_progress.length + (groups.blocked.length ? ` (+${groups.blocked.length} blocked)` : '');
     $('count_done').textContent = groups.done.length;
 
-    // clear lists
     $('list_backlog').innerHTML='';
     $('list_in_progress').innerHTML='';
     $('list_done').innerHTML='';
@@ -346,7 +302,7 @@
         ${t.last_update ? `<div class="meta"><b>Update:</b> ${escapeHtml(t.last_update)}</div>` : ''}
         <div class="meta">Last touched: ${escapeHtml(updated)} • Priority: ${escapeHtml(t.priority ?? 3)}</div>
         ${(t.tags && t.tags.length) ? `<div class="tags">${t.tags.map(x=>`<span class="tag">${escapeHtml(x)}</span>`).join('')}</div>` : ''}
-        <div style="margin-top:10px; display:flex; gap:8px;">
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap: wrap;">
           <button class="secondary" data-edit="${t.id}">Edit</button>
           <button class="secondary" data-move="in_progress" data-id="${t.id}">→ In progress</button>
           <button class="secondary" data-move="done" data-id="${t.id}">✓ Done</button>
@@ -359,7 +315,6 @@
     for(const t of [...groups.in_progress, ...groups.blocked]) $('list_in_progress').appendChild(card(t));
     for(const t of groups.done) $('list_done').appendChild(card(t));
 
-    // Wire buttons
     document.querySelectorAll('[data-edit]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = Number(btn.getAttribute('data-edit'));
@@ -382,8 +337,7 @@
   async function refresh(){
     const r = await api('/api/tasks');
     if(!r.ok){
-      $('boardWrap').style.display='none';
-      $('loginWrap').style.display='block';
+      alert('Failed to load tasks. Check Netlify function logs.');
       return;
     }
     const data = await r.json();
@@ -423,24 +377,8 @@
     const ok = await saveTask();
     if(ok){ closeModal(); await refresh(); }
   });
-  $('loginBtn').addEventListener('click', async () => {
-    const ok = await login();
-    if(ok){
-      $('loginWrap').style.display='none';
-      $('boardWrap').style.display='block';
-      await refresh();
-    }
-  });
 
-  (async () => {
-    const ok = await checkAuth();
-    if(!ok){
-      $('loginWrap').style.display='block';
-      return;
-    }
-    $('boardWrap').style.display='block';
-    await refresh();
-  })();
+  refresh();
 </script>
 </body>
 </html>

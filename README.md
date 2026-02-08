@@ -20,12 +20,11 @@ npm run dev
 Set these environment variables in Netlify:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
-- `APP_PASSWORD` (board password)
-- `COOKIE_SECRET` (random long string)
 
 Netlify settings are in `netlify.toml`.
 
 API endpoints:
-- `POST /api/auth/login`
-- `GET /api/auth/me`
 - `GET/POST /api/tasks`
+
+## Privacy
+This build removes app-level login. To keep it private, use **Netlify site-level access control** (site password / team access) so both the UI and Functions are protected.

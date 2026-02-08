@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clawd Activity Tracker</title>
+  <title>Clawd Task Board</title>
   <style>
     :root {
       --bg: #0b1020;
@@ -11,30 +11,30 @@
       --muted: #9aa6c6;
       --text: #e7ecff;
       --accent: #7aa2ff;
-      --good: #4ade80;
-      --bad: #fb7185;
-      --border: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.10);
+      --card: rgba(255,255,255,0.04);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background: radial-gradient(1000px 600px at 20% -10%, rgba(122,162,255,0.25), transparent 60%),
-                  radial-gradient(800px 500px at 90% 10%, rgba(74,222,128,0.15), transparent 55%),
+                  radial-gradient(800px 500px at 90% 10%, rgba(74,222,128,0.12), transparent 55%),
                   var(--bg);
       color: var(--text);
     }
     header {
-      padding: 20px 18px 10px;
+      padding: 18px;
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       backdrop-filter: blur(10px);
-      background: rgba(11,16,32,0.7);
+      background: rgba(11,16,32,0.75);
+      z-index: 10;
     }
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    h1 { margin: 0; font-size: 18px; letter-spacing: 0.2px; }
-    .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    h1 { margin: 0; font-size: 16px; }
+    .sub { margin-top: 4px; font-size: 12px; color: var(--muted); }
 
     main { padding: 16px 18px 30px; }
 
@@ -43,70 +43,37 @@
       grid-template-columns: 1fr;
       gap: 12px;
     }
-    @media (min-width: 900px) {
-      .grid { grid-template-columns: 420px 1fr; }
+    @media (min-width: 950px) {
+      .grid { grid-template-columns: 1fr 1fr 1fr; }
     }
 
-    .card {
+    .col {
       background: rgba(18,26,51,0.75);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 14px;
+      padding: 12px;
+      min-height: 300px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
-    .row { display: flex; gap: 10px; }
-    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-    input, textarea, select {
-      width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.10);
-      border-radius: 10px;
-      padding: 10px;
-      color: var(--text);
-      outline: none;
-    }
-    textarea { min-height: 82px; resize: vertical; }
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: var(--accent);
-      color: #08102a;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button.secondary {
-      background: rgba(255,255,255,0.08);
-      color: var(--text);
-      font-weight: 600;
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .muted { color: var(--muted); font-size: 12px; }
-    .kpis {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    .colTitle {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
-    .kpi {
-      padding: 10px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.09);
-    }
-    .kpi .v { font-size: 18px; font-weight: 800; }
-    .kpi .l { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .colTitle .name { font-weight: 900; font-size: 13px; }
+    .pill { font-size: 12px; color: var(--muted); }
 
-    .list { display: flex; flex-direction: column; gap: 8px; }
-    .item {
-      padding: 10px;
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.10);
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
+      padding: 10px;
+      margin-bottom: 10px;
     }
-    .itemTop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-    .title { font-weight: 800; }
-    .meta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .title { font-weight: 900; font-size: 13px; }
+    .meta { margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.35; }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .tag {
       font-size: 12px;
@@ -117,273 +84,363 @@
       border-radius: 999px;
     }
 
-    .twoCharts {
-      display: grid;
-      grid-template-columns: 1fr;
+    .toolbar {
+      display: flex;
       gap: 10px;
+      align-items: center;
+      margin-top: 10px;
     }
-    @media (min-width: 900px) {
-      .twoCharts { grid-template-columns: 1.2fr 0.8fr; }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: var(--accent);
+      color: #08102a;
+      font-weight: 800;
+      cursor: pointer;
     }
+    button.secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    input, textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 10px;
+      padding: 9px;
+      color: var(--text);
+      outline: none;
+      font-size: 13px;
+    }
+    textarea { min-height: 80px; resize: vertical; }
 
-    .hr { height: 1px; background: var(--border); margin: 12px 0; }
+    .modalBack {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal {
+      width: min(720px, 100%);
+      background: rgba(18,26,51,0.96);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .row { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 700px) { .row { grid-template-columns: 1fr 1fr; } }
+    .muted { color: var(--muted); font-size: 12px; }
+
+    .login {
+      max-width: 420px;
+      margin: 80px auto;
+      padding: 16px;
+      border-radius: 14px;
+      background: rgba(18,26,51,0.75);
+      border: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>Clawd Activity Tracker</h1>
-      <div class="sub">Log actions completed + see a simple weekly view. (Local app, SQLite)</div>
+<header>
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <div>
+        <h1>Clawd Task Board</h1>
+        <div class="sub">Simple, private project board: backlog → in progress → done.</div>
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="refreshBtn">Refresh</button>
+        <button id="newBtn">New task</button>
+      </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <div class="wrap grid">
-      <section class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-          <div>
-            <div style="font-weight:800;">Add activity</div>
-            <div class="muted">Fast logging. Tags are comma-separated.</div>
-          </div>
-          <button class="secondary" id="refreshBtn">Refresh</button>
-        </div>
-        <div class="hr"></div>
+<main>
+  <div class="wrap" id="loginWrap" style="display:none;">
+    <div class="login">
+      <div class="title">Login</div>
+      <div class="muted" style="margin-top:6px;">Enter the board password.</div>
+      <div style="margin-top:10px;"><input id="pw" type="password" placeholder="Password" /></div>
+      <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+        <button id="loginBtn">Login</button>
+        <div class="muted" id="loginStatus"></div>
+      </div>
+    </div>
+  </div>
 
-        <div class="row">
-          <div style="flex:1">
-            <label>Type</label>
-            <select id="type">
-              <option value="work">work</option>
-              <option value="research">research</option>
-              <option value="build">build</option>
-              <option value="content">content</option>
-              <option value="ops">ops</option>
-            </select>
-          </div>
-          <div style="flex:1">
-            <label>When</label>
-            <input id="when" type="datetime-local" />
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <label>Title</label>
-          <input id="title" placeholder="e.g., Keepa: pulled US reviews + rating for ASIN B0..." />
-        </div>
-
-        <div style="margin-top:10px;">
-          <label>Details</label>
-          <textarea id="details" placeholder="Optional. Notes, links, outcomes..." ></textarea>
-        </div>
-
-        <div style="margin-top:10px;">
-          <label>Tags</label>
-          <input id="tags" placeholder="amazon, keepa, ppc" />
-        </div>
-
-        <div style="margin-top:12px; display:flex; gap:10px;">
-          <button id="addBtn">Add</button>
-          <div class="muted" id="status" style="align-self:center;"></div>
-        </div>
+  <div class="wrap" id="boardWrap" style="display:none;">
+    <div class="grid">
+      <section class="col" data-status="backlog">
+        <div class="colTitle"><div class="name">Backlog</div><div class="pill" id="count_backlog">0</div></div>
+        <div id="list_backlog"></div>
       </section>
-
-      <section class="card">
-        <div class="kpis">
-          <div class="kpi"><div class="v" id="kTotal">—</div><div class="l">Activities (last 14d)</div></div>
-          <div class="kpi"><div class="v" id="kToday">—</div><div class="l">Today</div></div>
-          <div class="kpi"><div class="v" id="kStreak">—</div><div class="l">Current streak (days)</div></div>
-        </div>
-
-        <div class="twoCharts">
-          <div class="card" style="padding:10px;">
-            <div style="font-weight:800;margin-bottom:6px;">Daily volume</div>
-            <canvas id="chartDays" height="110"></canvas>
-          </div>
-          <div class="card" style="padding:10px;">
-            <div style="font-weight:800;margin-bottom:6px;">By type</div>
-            <canvas id="chartTypes" height="110"></canvas>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
-          <div style="font-weight:800;">Recent</div>
-          <div class="muted">Newest first</div>
-        </div>
-        <div style="height:10px;"></div>
-        <div class="list" id="list"></div>
+      <section class="col" data-status="in_progress">
+        <div class="colTitle"><div class="name">In progress</div><div class="pill" id="count_in_progress">0</div></div>
+        <div id="list_in_progress"></div>
+      </section>
+      <section class="col" data-status="done">
+        <div class="colTitle"><div class="name">Completed</div><div class="pill" id="count_done">0</div></div>
+        <div id="list_done"></div>
       </section>
     </div>
-  </main>
+  </div>
+</main>
 
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script>
-    const $ = (id) => document.getElementById(id);
+<div class="modalBack" id="modalBack">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;">
+      <div>
+        <div class="title" id="modalTitle">New task</div>
+        <div class="muted">Write in plain English. One task = one outcome.</div>
+      </div>
+      <button class="secondary" id="closeBtn">Close</button>
+    </div>
+    <div style="height:10px"></div>
 
-    const api = {
-      async getStats(days=14){
-        const r = await fetch(`/api/stats?days=${days}`);
-        return r.json();
-      },
-      async getActivities(limit=50){
-        const r = await fetch(`/api/activities?limit=${limit}`);
-        return r.json();
-      },
-      async addActivity(payload){
-        const r = await fetch('/api/activities', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if(!r.ok){
-          const t = await r.text();
-          throw new Error(t);
-        }
-        return r.json();
-      }
+    <div class="row">
+      <div>
+        <div class="muted">Status</div>
+        <select id="t_status">
+          <option value="backlog">backlog</option>
+          <option value="in_progress">in_progress</option>
+          <option value="blocked">blocked</option>
+          <option value="done">done</option>
+        </select>
+      </div>
+      <div>
+        <div class="muted">Priority (1=highest)</div>
+        <input id="t_priority" type="number" min="1" max="9" value="3" />
+      </div>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="muted">Title</div>
+      <input id="t_title" placeholder="e.g., Build shortlist of Canadian meat-stick co-packers" />
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="muted">Summary (optional)</div>
+      <textarea id="t_summary" placeholder="What success looks like / constraints / links..." ></textarea>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="muted">Last update (optional)</div>
+      <textarea id="t_last" placeholder="Short log line. Example: Waiting on: your answer about beef-only + stick size." ></textarea>
+    </div>
+
+    <div style="margin-top:10px;">
+      <div class="muted">Tags (comma separated)</div>
+      <input id="t_tags" placeholder="meat-sticks, copacker" />
+    </div>
+
+    <div style="margin-top:12px; display:flex; gap:10px; align-items:center;">
+      <button id="saveBtn">Save</button>
+      <div class="muted" id="saveStatus"></div>
+      <input type="hidden" id="t_id" />
+    </div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  async function api(path, opts={}) {
+    const r = await fetch(path, { credentials: 'include', ...opts });
+    return r;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  function parseTags(str){
+    return String(str||'').split(',').map(s=>s.trim()).filter(Boolean);
+  }
+
+  function openModal(task=null){
+    $('modalBack').style.display = 'flex';
+    $('saveStatus').textContent='';
+    if(!task){
+      $('modalTitle').textContent = 'New task';
+      $('t_id').value='';
+      $('t_status').value='backlog';
+      $('t_priority').value='3';
+      $('t_title').value='';
+      $('t_summary').value='';
+      $('t_last').value='';
+      $('t_tags').value='';
+      return;
     }
+    $('modalTitle').textContent = 'Edit task';
+    $('t_id').value=task.id;
+    $('t_status').value=task.status;
+    $('t_priority').value=task.priority ?? 3;
+    $('t_title').value=task.title || '';
+    $('t_summary').value=task.summary || '';
+    $('t_last').value=task.last_update || '';
+    $('t_tags').value=(task.tags||[]).join(', ');
+  }
+  function closeModal(){ $('modalBack').style.display='none'; }
 
-    function toLocalInputValue(ts){
-      const d = dayjs(ts);
-      return d.format('YYYY-MM-DDTHH:mm');
-    }
+  async function checkAuth(){
+    const r = await api('/api/auth/me');
+    return r.ok;
+  }
 
-    let chartDays, chartTypes;
-
-    function computeStreak(dayCounts){
-      // dayCounts: Map(YYYY-MM-DD => n)
-      let streak = 0;
-      for(let i=0; ; i++){
-        const day = dayjs().subtract(i, 'day').format('YYYY-MM-DD');
-        const n = dayCounts.get(day) || 0;
-        if(n <= 0) break;
-        streak++;
-      }
-      return streak;
-    }
-
-    async function refresh(){
-      $('status').textContent = 'Loading…';
-      const [stats, acts] = await Promise.all([api.getStats(14), api.getActivities(60)]);
-
-      $('kTotal').textContent = stats.total;
-
-      const byDayMap = new Map();
-      const labels = [];
-      const values = [];
-      for(let i=13;i>=0;i--){
-        const day = dayjs().subtract(i,'day').format('YYYY-MM-DD');
-        labels.push(dayjs(day).format('MMM D'));
-        byDayMap.set(day, 0);
-        values.push(0);
-      }
-
-      // Convert bucket back to date labels
-      for(const row of stats.byDay){
-        const day = dayjs(Number(row.dayBucket) * 86400000).format('YYYY-MM-DD');
-        if(byDayMap.has(day)){
-          byDayMap.set(day, row.n);
-        }
-      }
-      for(let i=13;i>=0;i--){
-        const day = dayjs().subtract(i,'day').format('YYYY-MM-DD');
-        values[13 - i] = byDayMap.get(day) || 0;
-      }
-
-      const todayKey = dayjs().format('YYYY-MM-DD');
-      $('kToday').textContent = byDayMap.get(todayKey) || 0;
-      $('kStreak').textContent = computeStreak(byDayMap);
-
-      // charts
-      if(chartDays) chartDays.destroy();
-      chartDays = new Chart($('chartDays'), {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{ label: 'Activities', data: values, backgroundColor: 'rgba(122,162,255,0.55)' }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: 'rgba(231,236,255,0.8)' } },
-            y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: 'rgba(231,236,255,0.8)', precision: 0 } }
-          }
-        }
-      });
-
-      const typeLabels = stats.byType.map(x => x.type);
-      const typeValues = stats.byType.map(x => x.n);
-      if(chartTypes) chartTypes.destroy();
-      chartTypes = new Chart($('chartTypes'), {
-        type: 'doughnut',
-        data: {
-          labels: typeLabels,
-          datasets: [{ data: typeValues, backgroundColor: ['#7aa2ff','#4ade80','#fb7185','#fbbf24','#a78bfa'] }]
-        },
-        options: {
-          plugins: { legend: { labels: { color: 'rgba(231,236,255,0.85)' } } }
-        }
-      });
-
-      // list
-      const list = $('list');
-      list.innerHTML = '';
-      for(const a of acts.rows){
-        const div = document.createElement('div');
-        div.className = 'item';
-        const when = dayjs(a.ts).format('MMM D, HH:mm');
-        div.innerHTML = `
-          <div class="itemTop">
-            <div class="title">${escapeHtml(a.title)}</div>
-            <div class="meta">${escapeHtml(a.type)} • ${when}</div>
-          </div>
-          ${a.details ? `<div style="margin-top:8px; color: rgba(231,236,255,0.9); font-size: 13px; line-height: 1.35;">${escapeHtml(a.details)}</div>` : ''}
-          ${a.tags && a.tags.length ? `<div class="tags">${a.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
-        `;
-        list.appendChild(div);
-      }
-
-      $('status').textContent = 'Up to date.';
-      setTimeout(() => { $('status').textContent = ''; }, 1500);
-    }
-
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll('&','&amp;')
-        .replaceAll('<','&lt;')
-        .replaceAll('>','&gt;')
-        .replaceAll('"','&quot;')
-        .replaceAll("'",'&#039;');
-    }
-
-    $('when').value = toLocalInputValue(Date.now());
-
-    $('addBtn').addEventListener('click', async () => {
-      try {
-        $('status').textContent = 'Saving…';
-        const ts = $('when').value ? dayjs($('when').value).valueOf() : Date.now();
-        await api.addActivity({
-          ts,
-          type: $('type').value,
-          title: $('title').value,
-          details: $('details').value,
-          tags: $('tags').value,
-        });
-        $('title').value = '';
-        $('details').value = '';
-        $('tags').value = '';
-        $('when').value = toLocalInputValue(Date.now());
-        await refresh();
-      } catch (e) {
-        $('status').textContent = 'Error: ' + e.message;
-      }
+  async function login(){
+    $('loginStatus').textContent = 'Logging in…';
+    const password = $('pw').value;
+    const r = await api('/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password })
     });
+    if(!r.ok){
+      $('loginStatus').textContent = 'Wrong password.';
+      return false;
+    }
+    $('loginStatus').textContent = 'OK.';
+    return true;
+  }
 
-    $('refreshBtn').addEventListener('click', refresh);
+  function render(tasks){
+    const groups = { backlog: [], in_progress: [], done: [], blocked: [] };
+    for(const t of tasks){
+      (groups[t.status] || groups.backlog).push(t);
+    }
 
-    refresh();
-  </script>
+    // counts
+    $('count_backlog').textContent = groups.backlog.length;
+    $('count_in_progress').textContent = groups.in_progress.length + (groups.blocked.length ? ` (+${groups.blocked.length} blocked)` : '');
+    $('count_done').textContent = groups.done.length;
+
+    // clear lists
+    $('list_backlog').innerHTML='';
+    $('list_in_progress').innerHTML='';
+    $('list_done').innerHTML='';
+
+    function card(t){
+      const div = document.createElement('div');
+      div.className='card';
+      const updated = t.updated_at ? new Date(t.updated_at).toLocaleString() : '';
+      const statusLine = t.status === 'blocked' ? `<div class="meta" style="color:#fbbf24;font-weight:800;">Blocked</div>` : '';
+      div.innerHTML = `
+        <div class="title">${escapeHtml(t.title)}</div>
+        ${statusLine}
+        ${t.summary ? `<div class="meta">${escapeHtml(t.summary)}</div>` : ''}
+        ${t.last_update ? `<div class="meta"><b>Update:</b> ${escapeHtml(t.last_update)}</div>` : ''}
+        <div class="meta">Last touched: ${escapeHtml(updated)} • Priority: ${escapeHtml(t.priority ?? 3)}</div>
+        ${(t.tags && t.tags.length) ? `<div class="tags">${t.tags.map(x=>`<span class="tag">${escapeHtml(x)}</span>`).join('')}</div>` : ''}
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button class="secondary" data-edit="${t.id}">Edit</button>
+          <button class="secondary" data-move="in_progress" data-id="${t.id}">→ In progress</button>
+          <button class="secondary" data-move="done" data-id="${t.id}">✓ Done</button>
+        </div>
+      `;
+      return div;
+    }
+
+    for(const t of groups.backlog) $('list_backlog').appendChild(card(t));
+    for(const t of [...groups.in_progress, ...groups.blocked]) $('list_in_progress').appendChild(card(t));
+    for(const t of groups.done) $('list_done').appendChild(card(t));
+
+    // Wire buttons
+    document.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = Number(btn.getAttribute('data-edit'));
+        const task = tasks.find(x => x.id === id);
+        openModal(task);
+      })
+    });
+    document.querySelectorAll('[data-move]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = Number(btn.getAttribute('data-id'));
+        const status = btn.getAttribute('data-move');
+        const task = tasks.find(x => x.id === id);
+        if(!task) return;
+        await saveTask({ ...task, status, last_update: task.last_update || '' });
+        await refresh();
+      })
+    });
+  }
+
+  async function refresh(){
+    const r = await api('/api/tasks');
+    if(!r.ok){
+      $('boardWrap').style.display='none';
+      $('loginWrap').style.display='block';
+      return;
+    }
+    const data = await r.json();
+    render(data.rows || []);
+  }
+
+  async function saveTask(taskOverride=null){
+    const payload = taskOverride || {
+      id: $('t_id').value ? Number($('t_id').value) : undefined,
+      status: $('t_status').value,
+      priority: Number($('t_priority').value || 3),
+      title: $('t_title').value,
+      summary: $('t_summary').value,
+      last_update: $('t_last').value,
+      tags: parseTags($('t_tags').value),
+    };
+
+    $('saveStatus').textContent = 'Saving…';
+    const r = await api('/api/tasks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok){
+      $('saveStatus').textContent = 'Error saving.';
+      return false;
+    }
+    $('saveStatus').textContent = 'Saved.';
+    return true;
+  }
+
+  $('refreshBtn').addEventListener('click', refresh);
+  $('newBtn').addEventListener('click', () => openModal(null));
+  $('closeBtn').addEventListener('click', closeModal);
+  $('modalBack').addEventListener('click', (e) => { if(e.target.id==='modalBack') closeModal(); });
+  $('saveBtn').addEventListener('click', async () => {
+    const ok = await saveTask();
+    if(ok){ closeModal(); await refresh(); }
+  });
+  $('loginBtn').addEventListener('click', async () => {
+    const ok = await login();
+    if(ok){
+      $('loginWrap').style.display='none';
+      $('boardWrap').style.display='block';
+      await refresh();
+    }
+  });
+
+  (async () => {
+    const ok = await checkAuth();
+    if(!ok){
+      $('loginWrap').style.display='block';
+      return;
+    }
+    $('boardWrap').style.display='block';
+    await refresh();
+  })();
+</script>
 </body>
 </html>

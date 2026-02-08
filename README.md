@@ -1,6 +1,6 @@
-# Clawd Activity Tracker
+# Clawd Task Board
 
-Tiny activity logger + dashboard.
+Simple private task board (ClickUp-lite) for tracking what Clawd is doing in plain English.
 
 ## Local dev
 
@@ -12,12 +12,20 @@ npm run dev
 
 ## Netlify + Supabase
 
+### Supabase
 - Create a Supabase project
-- Run `SUPABASE_SCHEMA.sql` in Supabase SQL editor
-- In Netlify set env vars:
-  - `SUPABASE_URL`
-  - `SUPABASE_SERVICE_ROLE_KEY`
+- Run `TASKS_SCHEMA.sql` in Supabase SQL editor
+
+### Netlify env vars
+Set these environment variables in Netlify:
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side only)
+- `APP_PASSWORD` (board password)
+- `COOKIE_SECRET` (random long string)
 
 Netlify settings are in `netlify.toml`.
 
-API endpoints are exposed at `/api/activities` and `/api/stats`.
+API endpoints:
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET/POST /api/tasks`
